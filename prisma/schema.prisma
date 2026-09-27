@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Player {
+  id                  String               @id @default(uuid())
+  name                String
+  appearances         Appearance[]
+  playerRatingSummary PlayerRatingSummary?
+  percentile          Int                  @default(0)
+  createdAt           DateTime             @default(now())
+}
+
+model Match {
+  id          String       @id
+  matchDate   DateTime
+  competition String
+  ageGroup    String
+  homeTeam    String
+  awayTeam    String
+  appearances Appearance[]
+}
+
+model Appearance {
+  id       String @id @default(uuid())
+  playerId String
+  matchId  String
+  player   Player @relation(fields: [playerId], references: [id])
+  match    Match  @relation(fields: [matchId], references: [id])
+
+  team          String
+  opponent      String
+  venue         String
+  goalsFor      Int
+  goalsAgainst  Int
+  position      String
+  minutesPlayed Int
+
+  touches           Int @default(0)
+  passesAttempted   Int @default(0)
+  passesCompleted   Int @default(0)
+  progressivePasses Int @default(0)
+  crosses           Int @default(0)
+  dribblesAttempted Int @default(0)
+  dribblesCompleted Int @default(0)
+  shots             Int @default(0)
+  shotsOnTarget     Int @default(0)
+  goals             Int @default(0)
+  assists           Int @default(0)
+  possessionLost    Int @default(0)
+  duelsWon          Int @default(0)
+  duelsLost         Int @default(0)
+  aerialDuelsWon    Int @default(0)
+  aerialDuelsLost   Int @default(0)
+  tackles           Int @default(0)
+  interceptions     Int @default(0)
+  recoveries        Int @default(0)
+  clearances        Int @default(0)
+  foulsCommitted    Int @default(0)
+  foulsWon          Int @default(0)
+  yellowCards       Int @default(0)
+  redCards          Int @default(0)
+
+  @@unique([playerId, matchId])
+}
+
+model PlayerRatingSummary {
+  id       String @id @default(uuid())
+  playerId String @unique
+  player   Player @relation(fields: [playerId], references: [id])
+
+  ageGroup       String
+  teams          String[]
+  totalMatches   Int
+  totalMinutes   Int
+  compositeScore Float
+  percentile     Int
+
+  goals           Int
+  assists         Int
+  passesCompleted Int
+  passAccuracy    Float
+  duelsWonRatio   Float
+  recoveries      Int
+  interceptions   Int
+  possessionLost  Int
+
+  @@map("player_rating_summary")
+}
